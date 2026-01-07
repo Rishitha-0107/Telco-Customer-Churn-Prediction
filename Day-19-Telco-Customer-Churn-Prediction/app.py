@@ -113,6 +113,7 @@ accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
 
 st.subheader("📊 Model Performance")
+TN, FP, FN, TP = cm.ravel()
 
 col1, col2, col3 = st.columns(3)
 
@@ -226,6 +227,7 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
 
 
 
