@@ -52,6 +52,13 @@ le = LabelEncoder()
 for col in cat_cols:
     df[col] = le.fit_transform(df[col])
 
+category_mappings = {}
+
+for col in cat_cols:
+    le = LabelEncoder()
+    df[col] = le.fit_transform(df[col])
+    category_mappings[col] = le.classes_
+
 # -------------------------------
 # 4. Feature Selection
 # -------------------------------
@@ -131,6 +138,7 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
 
 
 
