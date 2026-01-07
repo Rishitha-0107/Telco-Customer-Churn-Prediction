@@ -116,25 +116,31 @@ st.subheader("📊 Model Performance")
 st.write(f"**Accuracy:** {accuracy:.2f}")
 
 # Confusion Matrix
-# Confusion Matrix (Smaller Size)
-fig, ax = plt.subplots(figsize=(3, 3))  # 👈 control size here
-ax.imshow(cm, cmap="Blues")
+st.subheader("Confusion Matrix")
 
-ax.set_title("Confusion Matrix", fontsize=12)
-ax.set_xlabel("Predicted", fontsize=10)
-ax.set_ylabel("Actual", fontsize=10)
+# Create a narrow column so plot can't stretch
+col1, col2, col3 = st.columns([1, 2, 1])
 
-labels = [["TN", "FP"], ["FN", "TP"]]
-for i in range(2):
-    for j in range(2):
-        ax.text(
-            j, i,
-            f"{labels[i][j]}\n{cm[i, j]}",
-            ha="center", va="center",
-            fontsize=11
-        )
+with col2:
+    fig, ax = plt.subplots(figsize=(3, 3))  # small figure
+    ax.imshow(cm, cmap="Blues")
 
-st.pyplot(fig)
+    ax.set_title("Confusion Matrix", fontsize=10)
+    ax.set_xlabel("Predicted", fontsize=9)
+    ax.set_ylabel("Actual", fontsize=9)
+
+    labels = [["TN", "FP"], ["FN", "TP"]]
+    for i in range(2):
+        for j in range(2):
+            ax.text(
+                j, i,
+                f"{labels[i][j]}\n{cm[i, j]}",
+                ha="center", va="center",
+                fontsize=9
+            )
+
+    st.pyplot(fig, use_container_width=False)
+
 
 
 # ----------------------------------
@@ -209,6 +215,7 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
 
 
 
