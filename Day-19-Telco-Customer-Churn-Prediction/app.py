@@ -113,7 +113,18 @@ accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
 
 st.subheader("📊 Model Performance")
-st.write(f"**Accuracy:** {accuracy:.2f}")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("Accuracy", f"{accuracy*100:.2f}%")
+
+with col2:
+    st.metric("Churn Precision", f"{TP / (TP + FP + 1e-6):.2f}")
+
+with col3:
+    st.metric("Churn Recall", f"{TP / (TP + FN + 1e-6):.2f}")
+
 
 # Confusion Matrix
 st.subheader("Confusion Matrix")
@@ -215,6 +226,7 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
 
 
 
