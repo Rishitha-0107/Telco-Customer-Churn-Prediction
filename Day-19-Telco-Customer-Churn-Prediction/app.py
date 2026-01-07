@@ -33,10 +33,31 @@ st.dataframe(df.head())
 # ----------------------------------
 # 2. Dataset Information
 # ----------------------------------
-st.subheader("Dataset Information")
-buffer = io.StringIO()
-df.info(buf=buffer)
-st.text(buffer.getvalue())
+st.subheader("📋 Dataset Overview")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.metric("Total Rows", df.shape[0])
+    st.metric("Total Columns", df.shape[1])
+
+with col2:
+    st.metric("Numerical Columns", df.select_dtypes(include=["int64", "float64"]).shape[1])
+    st.metric("Categorical Columns", df.select_dtypes(include="object").shape[1])
+
+with col3:
+    st.metric("Missing Values", df.isnull().sum().sum())
+st.subheader("📊 Column Details")
+
+column_info = pd.DataFrame({
+    "Column Name": df.columns,
+    "Data Type": df.dtypes.astype(str),
+    "Missing Values": df.isnull().sum(),
+    "Unique Values": [df[col].nunique() for col in df.columns]
+})
+
+st.dataframe(column_info, use_container_width=True)
+
 
 # ----------------------------------
 # 3. Data Cleaning
@@ -181,3 +202,4 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
