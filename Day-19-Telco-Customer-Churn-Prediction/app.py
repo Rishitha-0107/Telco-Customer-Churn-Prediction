@@ -30,7 +30,11 @@ st.dataframe(df.head())
 # 2. Understand Customer Attributes
 # -------------------------------
 st.subheader("Dataset Information")
-st.write(df.info())
+
+buffer = io.StringIO()
+df.info(buf=buffer)
+st.text(buffer.getvalue())
+
 
 # -------------------------------
 # 3. Data Cleaning
@@ -127,5 +131,6 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
 
 
