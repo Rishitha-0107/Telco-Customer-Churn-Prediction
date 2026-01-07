@@ -1,10 +1,6 @@
-import streamlit as st
+import os
 import pandas as pd
-import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+import streamlit as st
 
 # -------------------------------
 # 1. Load Dataset
@@ -13,7 +9,9 @@ st.title("📞 Customer Churn Prediction App")
 
 @st.cache_data
 def load_data():
-    return pd.read_csv("WA_Fn-UseC_-Telco-Customer-Churn.csv")
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_PATH = os.path.join(BASE_DIR, "WA_Fn-UseC_-Telco-Customer-Churn.csv")
+    return pd.read_csv(DATA_PATH)
 
 df = load_data()
 
@@ -121,3 +119,4 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
