@@ -116,19 +116,26 @@ st.subheader("📊 Model Performance")
 st.write(f"**Accuracy:** {accuracy:.2f}")
 
 # Confusion Matrix
-fig, ax = plt.subplots()
+# Confusion Matrix (Smaller Size)
+fig, ax = plt.subplots(figsize=(4, 4))  # 👈 control size here
 ax.imshow(cm, cmap="Blues")
-ax.set_title("Confusion Matrix")
-ax.set_xlabel("Predicted")
-ax.set_ylabel("Actual")
+
+ax.set_title("Confusion Matrix", fontsize=12)
+ax.set_xlabel("Predicted", fontsize=10)
+ax.set_ylabel("Actual", fontsize=10)
 
 labels = [["TN", "FP"], ["FN", "TP"]]
 for i in range(2):
     for j in range(2):
-        ax.text(j, i, f"{labels[i][j]}\n{cm[i,j]}",
-                ha="center", va="center", fontsize=12)
+        ax.text(
+            j, i,
+            f"{labels[i][j]}\n{cm[i, j]}",
+            ha="center", va="center",
+            fontsize=11
+        )
 
 st.pyplot(fig)
+
 
 # ----------------------------------
 # 9. Business Analysis
@@ -202,4 +209,5 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
 
