@@ -9,49 +9,47 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, confusion_matrix
 
+# ----------------------------------
+# Page Config
+# ----------------------------------
+st.set_page_config(page_title="Customer Churn Prediction", layout="wide")
 
-# -------------------------------
+# ----------------------------------
 # 1. Load Dataset
-# -------------------------------
+# ----------------------------------
 st.title("📞 Customer Churn Prediction App")
 
 @st.cache_data
 def load_data():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    DATA_PATH = os.path.join(BASE_DIR, "WA_Fn-UseC_-Telco-Customer-Churn.csv")
-    return pd.read_csv(DATA_PATH)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    data_path = os.path.join(base_dir, "WA_Fn-UseC_-Telco-Customer-Churn.csv")
+    return pd.read_csv(data_path)
 
 df = load_data()
 
 st.subheader("Dataset Preview")
 st.dataframe(df.head())
 
-# -------------------------------
-# 2. Understand Customer Attributes
-# -------------------------------
+# ----------------------------------
+# 2. Dataset Information
+# ----------------------------------
 st.subheader("Dataset Information")
-
 buffer = io.StringIO()
 df.info(buf=buffer)
 st.text(buffer.getvalue())
 
-
-# -------------------------------
+# ----------------------------------
 # 3. Data Cleaning
-# -------------------------------
-df = df.drop("customerID", axis=1)
+# ----------------------------------
+df.drop("customerID", axis=1, inplace=True)
 df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
-df = df.dropna()
+df.dropna(inplace=True)
 
 # Encode target
 df["Churn"] = df["Churn"].map({"Yes": 1, "No": 0})
 
-# Encode categorical features
+# Encode categorical features & store mappings
 cat_cols = df.select_dtypes(include="object").columns
-le = LabelEncoder()
-for col in cat_cols:
-    df[col] = le.fit_transform(df[col])
-
 category_mappings = {}
 
 for col in cat_cols:
@@ -59,73 +57,118 @@ for col in cat_cols:
     df[col] = le.fit_transform(df[col])
     category_mappings[col] = le.classes_
 
-# -------------------------------
+# ----------------------------------
 # 4. Feature Selection
-# -------------------------------
+# ----------------------------------
 X = df.drop("Churn", axis=1)
 y = df["Churn"]
 
-# -------------------------------
+# ----------------------------------
 # 5. Train-Test Split
-# -------------------------------
+# ----------------------------------
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=42, stratify=y
 )
 
-# -------------------------------
+# ----------------------------------
 # 6. Feature Scaling
-# -------------------------------
+# ----------------------------------
 scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_test = scaler.transform(X_test)
 
-# -------------------------------
-# 7. Train Model (Logistic Regression)
-# -------------------------------
+# ----------------------------------
+# 7. Train Model
+# ----------------------------------
 model = LogisticRegression(max_iter=1000)
 model.fit(X_train, y_train)
 
-# -------------------------------
+# ----------------------------------
 # 8. Model Evaluation
-# -------------------------------
+# ----------------------------------
 y_pred = model.predict(X_test)
 
 accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
 
-st.subheader("Model Performance")
-st.write("**Accuracy:**", accuracy)
+st.subheader("📊 Model Performance")
+st.write(f"**Accuracy:** {accuracy:.2f}")
 
-# Confusion Matrix Plot
+# Confusion Matrix
 fig, ax = plt.subplots()
 ax.imshow(cm, cmap="Blues")
 ax.set_title("Confusion Matrix")
 ax.set_xlabel("Predicted")
 ax.set_ylabel("Actual")
 
+labels = [["TN", "FP"], ["FN", "TP"]]
 for i in range(2):
     for j in range(2):
-        ax.text(j, i, cm[i, j], ha="center", va="center")
+        ax.text(j, i, f"{labels[i][j]}\n{cm[i,j]}",
+                ha="center", va="center", fontsize=12)
 
 st.pyplot(fig)
 
-# -------------------------------
+# ----------------------------------
 # 9. Business Analysis
-# -------------------------------
+# ----------------------------------
 TN, FP, FN, TP = cm.ravel()
 
-st.subheader("Churn Analysis")
+st.subheader("📈 Business Insights")
 st.write("✔ Correctly identified churn customers (TP):", TP)
 st.write("❌ Non-churn customers misclassified as churn (FP):", FP)
+st.write("✔ Correctly identified non-churn customers (TN):", TN)
+st.write("❌ Missed churn customers (FN):", FN)
 
-# -------------------------------
-# 10. Predict for New Customer
-# -------------------------------
-st.subheader("Predict Churn for New Customer")
+st.write("**Total Customers:**", len(df))
+st.write("**Customers Who Stayed:**", (df["Churn"] == 0).sum())
+st.write("**Customers Who Churned:**", (df["Churn"] == 1).sum())
+
+# ----------------------------------
+# 10. Churn Insight Charts
+# ----------------------------------
+st.subheader("📊 Churn Insights")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    churn_counts = df["Churn"].value_counts()
+    fig1, ax1 = plt.subplots()
+    ax1.bar(["Stayed", "Churned"], churn_counts, color=["green", "red"])
+    ax1.set_title("Customer Churn Distribution")
+    st.pyplot(fig1)
+
+with col2:
+    contract_churn = df.groupby("Contract")["Churn"].mean()
+    fig2, ax2 = plt.subplots()
+    ax2.bar(contract_churn.index, contract_churn.values)
+    ax2.set_title("Churn Rate by Contract Type")
+    plt.xticks(rotation=30)
+    st.pyplot(fig2)
+
+# ----------------------------------
+# 11. Predict Churn for New Customer
+# ----------------------------------
+st.subheader("🔮 Predict Churn for New Customer")
 
 input_data = {}
+
 for col in X.columns:
-    input_data[col] = st.number_input(col, float(df[col].min()), float(df[col].max()))
+    if col in category_mappings:
+        input_data[col] = st.selectbox(
+            col, category_mappings[col]
+        )
+    else:
+        input_data[col] = st.number_input(
+            col,
+            min_value=float(df[col].min()),
+            max_value=float(df[col].max()),
+            value=float(df[col].mean())
+        )
+
+# Encode categorical inputs
+for col in category_mappings:
+    input_data[col] = list(category_mappings[col]).index(input_data[col])
 
 input_df = pd.DataFrame([input_data])
 input_df = scaler.transform(input_df)
@@ -138,7 +181,3 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
-
-
-
-
