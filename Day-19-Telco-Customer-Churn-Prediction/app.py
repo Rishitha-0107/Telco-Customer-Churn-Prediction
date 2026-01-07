@@ -117,7 +117,7 @@ st.write(f"**Accuracy:** {accuracy:.2f}")
 
 # Confusion Matrix
 # Confusion Matrix (Smaller Size)
-fig, ax = plt.subplots(figsize=(4, 4))  # 👈 control size here
+fig, ax = plt.subplots(figsize=(3, 3))  # 👈 control size here
 ax.imshow(cm, cmap="Blues")
 
 ax.set_title("Confusion Matrix", fontsize=12)
@@ -209,5 +209,6 @@ if st.button("Predict Churn"):
         st.error(f"⚠ Likely to Churn (Probability: {probability:.2f})")
     else:
         st.success(f"✅ Likely to Stay (Probability: {1 - probability:.2f})")
+
 
 
